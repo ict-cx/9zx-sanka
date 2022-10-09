@@ -1,4 +1,4 @@
-# 9zxಸಂಕ - ಆಸ್ಕಿ ಮತ್ತು ಯುನಿಕೋಡಿಗೆ ಕನ್ನಡದ ಸಂಕ
+# 9zx-Sanka - ಕನ್ನಡದ ಆಸ್ಕಿ ಮತ್ತು ಯುನಿಕೋಡಿಗೆ ಸಂಕ
 
 Android apk is created using free tools
 
