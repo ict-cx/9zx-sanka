@@ -1,6 +1,6 @@
 # 9zxಸಂಕ - ಆಸ್ಕಿ ಮತ್ತು ಯುನಿಕೋಡಿಗೆ ಕನ್ನಡದ ಸಂಕ
 
-Android apk is created using free tools, and ublshed here https://ss1.in/app9xanka
+Android apk is created using free tools
 
 #Planned activity: looking possibilities for porting to other Indian languages.
 #
