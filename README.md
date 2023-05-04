@@ -1,5 +1,5 @@
 ![logo](https://user-images.githubusercontent.com/86064372/236158385-9db93a91-5e10-4a81-86ab-bd4d1a79de83.png)
-# 9zx-Sanka - ಕನ್ನಡದ ಆಸ್ಕಿ ಮತ್ತು ಯುನಿಕೋಡಿಗೆ ಸಂಕ
+# 9zx.in/Sanka - ಕನ್ನಡದ ಆಸ್ಕಿ ಮತ್ತು ಯುನಿಕೋಡಿಗೆ ಸಂಕ
 
 Android apk is created using free tools
 
