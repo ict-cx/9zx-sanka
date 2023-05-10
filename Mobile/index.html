@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    
+<head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link href="static/fav.png?v=1" rel="icon" type="image/x-icon" />
+        <meta property="og:site_name" content="Kannada ASCII/Unicode Converter"/>
+        <link rel="apple-touch-icon" href="static/fav.png?v=1" />
+        <title>ಸಂಕ - ಆಸ್ಕಿ 🔁 ಯುನಿಕೋಡಿಗೆ ಕನ್ನಡದ ಸಂಕ.  Kannada ASCII 🔁 Unicode Converter</title>
+        <meta property="og:title" content="Kannada ASCII/Unicode Converter"/>
+        <meta property="twitter:title" content="Kannada ASCII/Unicode Converter"/>
+        <meta name="description" content="Tool for Kannada to convert from Nudi/Baraha to Unicode or back to Nudi/Baraha from Unicode"/>
+        <meta property="og:description" content="Tool for Kannada to convert from Nudi/Baraha to Unicode or back to Nudi/Baraha from Unicode"/>
+        <meta property="twitter:description" content="Tool for Kannada to convert from Nudi/Baraha to Unicode or back to Nudi/Baraha from Unicode"/>
+        <meta property="og:url" content="https://github.com/ict-cx/sanka" />
+        <meta property="twitter:url" content="https://github.com/ict-cx/sanka" />
+        <link rel="stylesheet" href="static/app.css?v=2" />
+        <script type="text/javascript" src="static/kn.js?v=2"></script>
+        <script type="text/javascript" src="static/app.min.js?v=2"></script>
+    </head>
+    <body>
+        <div class="top-bar">
+            <img src="static/logo.svg"/> 
+        <div class="project-summary-bar">
+        <div class="project-summary">
+            ನುಡಿ/ಬರಹದ ASCII ಪಠ್ಯವನ್ನು ಯುನಿಕೋಡ್‍ಗೆ ಅಥವಾ ಯುನಿಕೋಡ್‌ನಿಂದ ಬರಹ/ನುಡಿ‍ಗೆ ಬದಲಾಯಿಸಲು ಈ ಕೆಳಗೆ paste ಮಾಡಿ.
+        </div>
+        </div>
+        <div id="elmapp"></div>
+        <script type="text/javascript">
+          var app = Elm.Converter.init({
+              node: document.getElementById('elmapp')
+          });
+          app.ports.convert.subscribe(function(args) {
+             if (args.a2u){
+                 var out = kn.ascii_to_unicode(args.input, args.englishNumbers, args.removeExtraSpaces);
+             } else {
+                 var out = kn.unicode_to_ascii(args.input, args.englishNumbers, args.removeExtraSpaces);
+             }
+             app.ports.converted_text.send(out);
+         }); 
+        </script>
+        <!-- Google tag (gtag.js) -->
+        
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2M6S9PWQF7"></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-2M6S9PWQF7');
+</script>
+        <div class="sep clear"></div>
+    <div align=center>
+
+</div>
+ <div class="sep clear"></div>
+ <span style="color:#ff2e00"> SANKA: ASCII🔁Unicode Converter for Kannada language. </span>
+         <span style="color:#ffffff"> <p> [Acknowledgement and credits:] App by: Johnson Dcunha ( ict.net.in ), Hosted at 9zx.in/sanka utilizing the source code from <span style="color:#ff2e00"> <b><a href="https://github.com/ict-cx/sanka"><span style="color:#ff2e00"> https://github.com/ict-cx/sanka . </span></a></span></b> The Source Code by Aravinda VK released under GPL license. A special thanks to Aravinda VK 🙏🙏🙏 for his Open Source - zeal. Now, the App code is further modified, improvised ui for mobile screen. More languages may be added in the future.</p> </span>
+          <div class="sep clear"></div>
+          
+</body>
+</html>
