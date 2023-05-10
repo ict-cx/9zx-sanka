@@ -35,18 +35,18 @@ body{
     margin: auto;
 }
 .left{
-    width: 50%;
-    float: left;
-    
+    width: 98%;
+    float: top;
+    text-align: center;
 }
 .right{
-    width: 50%;
-    float: left;
-    text-align: right;
+    width: 98%;
+    float: bottom;
+    text-align: center;
 }
 .left textarea, .right textarea{
     width: 94%;
-    min-height: 900px;
+    min-height: 150px;
     border: 1px solid #bbb;
     padding: 2%;
 }
