@@ -8,6 +8,6 @@ Android apk is created using free tools
 #Thanks to Aravinda V. K , his Initial work is a big task. 
 
 I will still contribute to the original repository. 
-But working here, can give more freedom if anything goes out of hands, more freegom
+But working here, can give more freedom if anything goes out of hands.
 
 ## Johnson Dcunha
