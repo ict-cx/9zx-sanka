@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="kn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ಸಂಕ - Kannada Office Document Converter (ASCII to Unicode)</title>
+    <!-- JSZip to unpack and repack docx, xlsx, and pptx OpenXML files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 30px 15px;
+            color: #333;
+        }
+        .container {
+            max-width: 680px;
+            margin: auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        h2 {
+            margin-top: 0;
+            color: #d35400;
+            font-size: 22px;
+        }
+        p {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .dropzone {
+            border: 2px dashed #bbb;
+            border-radius: 8px;
+            padding: 35px 20px;
+            text-align: center;
+            background: #fafafa;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .dropzone:hover {
+            border-color: #d35400;
+            background: #fff8f3;
+        }
+        .options {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .options .opt-row {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .options label {
+            cursor: pointer;
+        }
+        .options select, .options input[type="text"] {
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+        .custom-font-box {
+            display: none;
+            width: 100%;
+            margin-top: 5px;
+        }
+        button {
+            background-color: #d35400;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        button:hover:not(:disabled) {
+            background-color: #ba4700;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 15px;
+            font-size: 14px;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+        }
+        .info { background-color: #e8f4fd; color: #0c5460; display: block !important; }
+        .success { background-color: #eafaf1; color: #155724; display: block !important; }
+        .error { background-color: #fdf2e9; color: #721c24; display: block !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ನುಡಿ / ಬರಹ Document Converter (ಸಂಕ)</h2>
+    <p>Convert <strong>Word (.docx)</strong>, <strong>Excel (.xlsx)</strong>, and <strong>PowerPoint (.pptx)</strong> documents from Kannada ASCII (Nudi/Baraha) into Unicode Kannada.</p>
+
+    <div class="dropzone" id="dropArea" onclick="document.getElementById('fileInput').click()">
+        <span id="fileLabel">📁 Click to choose or drop a <strong>.docx</strong>, <strong>.xlsx</strong>, or <strong>.pptx</strong> file</span>
+        <input type="file" id="fileInput" accept=".docx,.xlsx,.pptx" style="display:none;" />
+    </div>
+
+    <div class="options">
+        <div class="opt-row">
+            <label>
+                <input type="checkbox" id="englishNumbers" checked /> Preserve English Numbers (0-9)
+            </label>
+        </div>
+
+        <div class="opt-row">
+            <label for="targetFont">Target Unicode Font:</label>
+            <select id="targetFont" onchange="toggleCustomFont(this.value)">
+                <optgroup label="Popular & Cross-Platform">
+                    <option value="Arial Unicode MS" selected>Arial Unicode MS</option>
+                    <option value="Nirmala UI">Nirmala UI (Windows 10/11 Default)</option>
+                    <option value="Tunga">Tunga (Classic Windows)</option>
+                </optgroup>
+                <optgroup label="Google / Modern Unicode Fonts">
+                    <option value="Noto Sans Kannada">Noto Sans Kannada</option>
+                    <option value="Noto Serif Kannada">Noto Serif Kannada</option>
+                    <option value="Anek Kannada">Anek Kannada</option>
+                    <option value="Baloo Tamma 2">Baloo Tamma 2</option>
+                </optgroup>
+                <optgroup label="Classic Kannada Fonts">
+                    <option value="Kedage">Kedage</option>
+                    <option value="Mallige">Mallige</option>
+                    <option value="Hubballi">Hubballi</option>
+                </optgroup>
+                <optgroup label="Apple / macOS">
+                    <option value="Kannada Sangam MN">Kannada Sangam MN</option>
+                    <option value="Kannada MN">Kannada MN</option>
+                </optgroup>
+                <optgroup label="Linux / Open Source">
+                    <option value="Lohit Kannada">Lohit Kannada</option>
+                    <option value="Gubbi">Gubbi</option>
+                    <option value="Navilu">Navilu</option>
+                </optgroup>
+                <optgroup label="Other">
+                    <option value="__custom__">Custom font name...</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div class="custom-font-box" id="customFontBox">
+            <input type="text" id="customFontInput" placeholder="Type font name exactly as installed (e.g. Kedage-Normal)" style="width: 95%;" />
+        </div>
+    </div>
+
+    <button id="convertBtn" disabled onclick="processFile()">Convert and Download</button>
+    <div id="status"></div>
+</div>
+
+<script>
+function toggleCustomFont(val) {
+    const box = document.getElementById('customFontBox');
+    if (val === '__custom__') {
+        box.style.display = 'block';
+        document.getElementById('customFontInput').focus();
+    } else {
+        box.style.display = 'none';
+    }
+}
+
+function getSelectedFont() {
+    const select = document.getElementById('targetFont');
+    if (select.value === '__custom__') {
+        const custom = document.getElementById('customFontInput').value.trim();
+        return custom ? custom : 'Arial Unicode MS';
+    }
+    return select.value;
+}
+
+// =========================================================================
+// EMBEDDED KANNADA ASCII TO UNICODE ENGINE (Ported from Sanka by Aravinda VK)
+// =========================================================================
+const kn = (function() {
+    const mapping = {
+        "C": "ಅ", "D": "ಆ", "E": "ಇ", "F": "ಈ", "G": "ಉ", "H": "ಊ", "IÄ": "ಋ",
+        "J": "ಎ", "K": "ಏ", "L": "ಐ", "M": "ಒ", "N": "ಓ", "O": "ಔ",
+        "A": "ಂ", "B": "ಃ",
+        "Pï": "ಕ್", "PÀ": "ಕ", "PÁ": "ಕಾ", "Q": "ಕಿ", "PÉ": "ಕೆ", "PË": "ಕೌ",
+        "Sï": "ಖ್", "R": "ಖ", "SÁ": "ಖಾ", "T": "ಖಿ", "SÉ": "ಖೆ", "SË": "ಖೌ",
+        "Uï": "ಗ್", "UÀ": "ಗ", "UÁ": "ಗಾ", "V": "ಗಿ", "UÉ": "ಗೆ", "UË": "ಗೌ",
+        "Wï": "ಘ್", "WÀ": "ಘ", "WÁ": "ಘಾ", "X": "ಘಿ", "WÉ": "ಘೆ", "WË": "ಘೌ",
+        "k": "ಞ",
+        "Zï": "ಚ್", "ZÀ": "ಚ", "ZÁ": "ಚಾ", "a": "ಚಿ", "ZÉ": "ಚೆ", "ZË": "ಚೌ",
+        "bï": "ಛ್", "bÀ": "ಛ", "bÁ": "ಛಾ", "c": "ಛಿ", "bÉ": "ಛೆ", "bË": "ಛೌ",
+        "eï": "ಜ್", "d": "ಜ", "eÁ": "ಜಾ", "f": "ಜಿ", "eÉ": "ಜೆ", "eË": "ಜೌ",
+        "gÀhiï": "ಝ್", "gÀhÄ": "ಝ", "gÀhiÁ": "ಝಾ", "jhÄ": "ಝಿ", "gÉhÄ": "ಝೆ", "gÉhÆ": "ಝೊ", "gÀhiË": "ಝೌ",
+        "Y": "ಙ",
+        "mï": "ಟ್", "l": "ಟ", "mÁ": "ಟಾ", "n": "ಟಿ", "mÉ": "ಟೆ", "mË": "ಟೌ",
+        "oï": "ಠ್", "oÀ": "ಠ", "oÁ": "ಠಾ", "p": "ಠಿ", "oÉ": "ಠೆ", "oË": "ಠೌ",
+        "qï": "ಡ್", "qÀ": "ಡ", "qÁ": "ಡಾ", "r": "ಡಿ", "qÉ": "ಡೆ", "qË": "ಡೌ",
+        "qsï": "ಢ್", "qsÀ": "ಢ", "qsÁ": "ಢಾ", "rü": "ಢಿ", "qsÉ": "ಢೆ", "qsË": "ಢೌ",
+        "uï": "ಣ್", "t": "ಣ", "uÁ": "ಣಾ", "tÂ": "ಣಿ", "uÉ": "ಣೆ", "uË": "ಣೌ",
+        "vï": "ತ್", "vÀ": "ತ", "vÁ": "ತಾ", "w": "ತಿ", "vÉ": "ತೆ", "vË": "ತೌ",
+        "xï": "ಥ್", "xÀ": "ಥ", "xÁ": "ಥಾ", "y": "ಥಿ", "xÉ": "ಥೆ", "xË": "ಥೌ",
+        "zï": "ದ್", "zÀ": "ದ", "zÁ": "ದಾ", "¢": "ದಿ", "zÉ": "ದೆ", "zË": "ದೌ",
+        "zsï": "ಧ್", "zsÀ": "ಧ", "zsÁ": "ಧಾ", "¢ü": "ಧಿ", "zsÉ": "ಧೆ", "zsË": "ಧೌ",
+        "£ï": "ನ್", "£À": "ನ", "£Á": "ನಾ", "¤": "ನಿ", "£É": "ನೆ", "£Ë": "ನೌ",
+        "¥ï": "ಪ್", "¥À": "ಪ", "¥Á": "ಪಾ", "¦": "ಪಿ", "¥É": "ಪೆ", "¥Ë": "ಪೌ",
+        "¥sï": "ಫ್", "¥sÀ": "ಫ", "¥sÁ": "ಫಾ", "¦ü": "ಫಿ", "¥sÉ": "ಫೆ", "¥sË": "ಫೌ",
+        "¨ï": "ಬ್", "§": "ಬ", "¨Á": "ಬಾ", "©": "ಬಿ", "¨É": "ಬೆ", "¨Ë": "ಬೌ",
+        "¨sï": "ಭ್", "¨sÀ": "ಭ", "¨sÁ": "ಭಾ", "©ü": "ಭಿ", "¨sÉ": "ಭೆ", "¨sË": "ಭೌ",
+        "ªÀiï": "ಮ್", "ªÀÄ": "ಮ", "ªÀiÁ": "ಮಾ", "«Ä": "ಮಿ", "ªÉÄ": "ಮೆ", "ªÀiË": "ಮೌ",
+        "AiÀiï": "ಯ್", "AiÀÄ": "ಯ", "0iÀÄ": "ಯ", "AiÀiÁ": "ಯಾ", "0iÀiÁ": "ಯಾ", "¬Ä": "ಯಿ", "0iÀÄÄ": "ಯು",
+        "AiÉÄ": "ಯೆ", "0iÉÆ": "ಯೊ", "AiÉÆ": "ಯೊ", "AiÀiË": "ಯೌ",
+        "gï": "ರ್", "gÀ": "ರ", "gÁ": "ರಾ", "j": "ರಿ", "gÉ": "ರೆ", "gË": "ರೌ",
+        "¯ï": "ಲ್", "®": "ಲ", "¯Á": "ಲಾ", "°": "ಲಿ", "¯É": "ಲೆ", "¯Ë": "ಲೌ",
+        "ªï": "ವ್", "ªÀ": "ವ", "ªÁ": "ವಾ", "«": "ವಿ", "ªÀÅ": "ವು", "ªÀÇ": "ವೂ",
+        "ªÉ": "ವೆ", "ªÉÃ": "ವೇ", "ªÉÊ": "ವೈ", "ªÉÆ": "ಮೊ", "ªÉÆÃ": "ಮೋ", "ªÉÇ": "ವೊ", "ªÉÇÃ": "ವೋ", "ªÉ ": "ವೆ",
+        "¥ÀÅ": "ಪು", "¥ÀÇ": "ಪೂ", "¥sÀÅ": "ಫು", "¥sÀÇ": "ಫೂ", "ªË": "ವೌ",
+        "±ï": "ಶ್", "±À": "ಶ", "±Á": "ಶಾ", "²": "ಶಿ", "±É": "ಶೆ", "±Ë": "ಶೌ",
+        "µï": "ಷ್", "µÀ": "ಷ", "µÁ": "ಷಾ", "¶": "ಷಿ", "µÉ": "ಷೆ", "µË": "ಷೌ",
+        "¸ï": "ಸ್", "¸À": "ಸ", "¸Á": "ಸಾ", "¹": "ಸಿ", "¸É": "ಸೆ", "¸Ë": "ಸೌ",
+        "ºï": "ಹ್", "ºÀ": "ಹ", "ºÁ": "ಹಾ", "»": "ಹಿ", "ºÉ": "ಹೆ", "ºË": "ಹೌ",
+        "¼ï": "ಳ್", "¼À": "ಳ", "¼Á": "ಳಾ", "½": "ಳಿ", "¼É": "ಳೆ", "¼Ë": "ಳೌ"
+    };
+
+    const broken_cases = {
+        "Ã": { "value": "ೀ", "mapping": { "ಿ": "ೀ", "ೆ": "ೇ", "ೊ": "ೋ" } },
+        "Ä": { "value": "ು", "mapping": {} },
+        "Æ": { "value": "ೂ", "mapping": { "ೆ": "ೊ" } },
+        "È": { "value": "ೃ", "mapping": {} },
+        "Ê": { "value": "ೈ", "mapping": { "ೆ": "ೈ" } }
+    };
+
+    const dependent_vowels = ["್", "ಾ", "ಿ", "ೀ", "ು", "ೂ", "ೃ", "ೆ", "ೇ", "ೈ", "ೊ", "ೋ", "ೌ"];
+    const ignore_list = { "ö": "", "÷": "" };
+
+    const vattaksharagalu = {
+        "Ì": "ಕ", "Í": "ಖ", "Î": "ಗ", "Ï": "ಘ", "Õ": "ಞ",
+        "Ñ": "ಚ", "Ò": "ಛ", "Ó": "ಜ", "Ô": "ಝ",
+        "Ö": "ಟ", "×": "ಠ", "Ø": "ಡ", "Ù": "ಢ", "Ú": "ಣ",
+        "Û": "ತ", "Ü": "ಥ", "Ý": "ದ", "Þ": "ಧ", "ß": "ನ",
+        "à": "ಪ", "á": "ಫ", "â": "ಬ", "ã": "ಭ", "ä": "ಮ",
+        "å": "ಯ", "æ": "ರ", "è": "ಲ", "é": "ವ",
+        "ê": "ಶ", "ë": "ಷ", "ì": "ಸ", "í": "ಹ", "î": "ಳ", "ç": "ರ"
+    };
+
+    const ascii_arkavattu = { "ð": "ರ" };
+
+    const kannada_numbers = {
+        "0": "೦", "1": "೧", "2": "೨", "3": "೩", "4": "೪",
+        "5": "೫", "6": "೬", "7": "೭", "8": "೮", "9": "೯"
+    };
+
+    function process_vattakshara(letters, t) {
+        let last = letters.length > 0 ? letters[letters.length - 1] : "";
+        if (dependent_vowels.indexOf(last) !== -1) {
+            letters[letters.length - 1] = "್";
+            letters.push(vattaksharagalu[t]);
+            letters.push(last);
+        } else {
+            letters.push("್");
+            letters.push(vattaksharagalu[t]);
+        }
+        return letters;
+    }
+
+    function process_arkavattu(letters, t) {
+        let last = letters.length > 0 ? letters[letters.length - 1] : "";
+        let second_last = letters.length > 1 ? letters[letters.length - 2] : "";
+        if (dependent_vowels.indexOf(last) !== -1) {
+            letters[letters.length - 2] = ascii_arkavattu[t];
+            letters[letters.length - 1] = "್";
+            letters.push(second_last);
+            letters.push(last);
+        } else {
+            letters[letters.length - 1] = ascii_arkavattu[t];
+            letters.push("್");
+            letters.push(last);
+        }
+        return letters;
+    }
+
+    function process_broken_cases(letters, t) {
+        let last = letters.length > 0 ? letters[letters.length - 1] : "";
+        let map = broken_cases[t]["mapping"];
+        if (map && map[last]) {
+            letters[letters.length - 1] = map[last];
+        } else {
+            letters.push(broken_cases[t]["value"]);
+        }
+        return letters;
+    }
+
+    function find_mapping(op, txt, current_pos, keepEnglishNumbers) {
+        let remaining = txt.length - current_pos;
+        let max_len = remaining < 7 ? remaining : 7;
+
+        for (let l = max_len; l > 0; l--) {
+            let sub = txt.substr(current_pos, l);
+            if (mapping[sub] !== undefined) {
+                op.push(mapping[sub]);
+                return [l - 1, op];
+            }
+        }
+
+        let t = txt[current_pos];
+        if (ignore_list[t] !== undefined) {
+            return [0, op];
+        }
+
+        if (!keepEnglishNumbers && kannada_numbers[t] !== undefined) {
+            op.push(kannada_numbers[t]);
+            return [0, op];
+        }
+
+        if (ascii_arkavattu[t]) {
+            op = process_arkavattu(op, t);
+        } else if (vattaksharagalu[t]) {
+            op = process_vattakshara(op, t);
+        } else if (broken_cases[t]) {
+            op = process_broken_cases(op, t);
+        } else {
+            op.push(t);
+        }
+        return [0, op];
+    }
+
+    return {
+        ascii_to_unicode: function(txt, keepEnglishNumbers) {
+            if (!txt) return "";
+            let op = [];
+            let i = 0;
+            let len = txt.length;
+            while (i < len) {
+                let res = find_mapping(op, txt, i, keepEnglishNumbers);
+                op = res[1];
+                i += (1 + res[0]);
+            }
+            return op.join("");
+        }
+    };
+})();
+
+// =========================================================================
+// UI AND OFFICE DOCUMENT XML ENGINE
+// =========================================================================
+let currentFile = null;
+const fileInput = document.getElementById('fileInput');
+const convertBtn = document.getElementById('convertBtn');
+const statusDiv = document.getElementById('status');
+const fileLabel = document.getElementById('fileLabel');
+const dropArea = document.getElementById('dropArea');
+
+fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        handleFileSelection(e.target.files[0]);
+    }
+});
+
+['dragenter', 'dragover'].forEach(name => {
+    dropArea.addEventListener(name, (e) => {
+        e.preventDefault();
+        dropArea.style.borderColor = '#d35400';
+    });
+});
+['dragleave', 'drop'].forEach(name => {
+    dropArea.addEventListener(name, (e) => {
+        e.preventDefault();
+        dropArea.style.borderColor = '#bbb';
+    });
+});
+dropArea.addEventListener('drop', (e) => {
+    if (e.dataTransfer.files.length > 0) {
+        handleFileSelection(e.dataTransfer.files[0]);
+    }
+});
+
+function handleFileSelection(file) {
+    currentFile = file;
+    fileLabel.innerHTML = `Selected: <strong>${file.name}</strong> (${(file.size / 1024).toFixed(1)} KB)`;
+    convertBtn.disabled = false;
+    statusDiv.style.display = 'none';
+}
+
+function showStatus(text, type) {
+    statusDiv.className = type;
+    statusDiv.innerText = text;
+}
+
+// Regex matching common legacy Kannada ASCII font families
+const asciiFontRegex = /Nudi|BRH|Baraha|Akshar|Chanakya|Kailash|Gandhari|Hemavathi|Kavery|Sharada|Pampa|Suma|Veda|Bhairavi|Sirigannada/i;
+
+async function processFile() {
+    if (!currentFile) return;
+
+    if (typeof JSZip === "undefined") {
+        showStatus("JSZip library could not load. Please ensure you are connected to the internet to load JSZip.", "error");
+        return;
+    }
+
+    showStatus("Processing file, please wait...", "info");
+    convertBtn.disabled = true;
+
+    try {
+        const keepEngNums = document.getElementById('englishNumbers').checked;
+        const targetFont = getSelectedFont();
+
+        const zip = await JSZip.loadAsync(currentFile);
+        const parser = new DOMParser();
+        const serializer = new XMLSerializer();
+
+        const xmlFiles = Object.keys(zip.files).filter(filename => 
+            filename.endsWith('.xml') && !filename.startsWith('_rels/')
+        );
+
+        for (const filename of xmlFiles) {
+            const xmlStr = await zip.file(filename).async('string');
+            const doc = parser.parseFromString(xmlStr, 'application/xml');
+            let modified = false;
+
+            // 1. Word text (<w:t>)
+            const wordNodes = doc.getElementsByTagName('w:t');
+            for (let node of wordNodes) {
+                if (node.textContent) {
+                    node.textContent = kn.ascii_to_unicode(node.textContent, keepEngNums);
+                    modified = true;
+                }
+            }
+
+            // 2. Excel text (<t>)
+            const excelNodes = doc.getElementsByTagName('t');
+            for (let node of excelNodes) {
+                if (node.textContent) {
+                    node.textContent = kn.ascii_to_unicode(node.textContent, keepEngNums);
+                    modified = true;
+                }
+            }
+
+            // 3. PowerPoint text (<a:t>)
+            const pptNodes = doc.getElementsByTagName('a:t');
+            for (let node of pptNodes) {
+                if (node.textContent) {
+                    node.textContent = kn.ascii_to_unicode(node.textContent, keepEngNums);
+                    modified = true;
+                }
+            }
+
+            // 4. Word font properties (<w:rFonts>)
+            const rFonts = doc.getElementsByTagName('w:rFonts');
+            for (let rFont of rFonts) {
+                for (let attr of ['w:ascii', 'w:hAnsi', 'w:cs']) {
+                    if (rFont.hasAttribute(attr) && asciiFontRegex.test(rFont.getAttribute(attr))) {
+                        rFont.setAttribute(attr, targetFont);
+                        modified = true;
+                    }
+                }
+            }
+
+            // 5. PowerPoint font properties (<a:latin>, <a:cs>, <a:ea>)
+            const pptFonts = [
+                ...doc.getElementsByTagName('a:latin'), 
+                ...doc.getElementsByTagName('a:cs'),
+                ...doc.getElementsByTagName('a:ea')
+            ];
+            for (let fontTag of pptFonts) {
+                if (fontTag.hasAttribute('typeface') && asciiFontRegex.test(fontTag.getAttribute('typeface'))) {
+                    fontTag.setAttribute('typeface', targetFont);
+                    modified = true;
+                }
+            }
+
+            // 6. Excel styles.xml font references (<name val="..."/>)
+            const excelFontNames = doc.getElementsByTagName('name');
+            for (let nameTag of excelFontNames) {
+                if (nameTag.hasAttribute('val') && asciiFontRegex.test(nameTag.getAttribute('val'))) {
+                    nameTag.setAttribute('val', targetFont);
+                    modified = true;
+                }
+            }
+
+            if (modified) {
+                zip.file(filename, serializer.serializeToString(doc));
+            }
+        }
+
+        showStatus("Packing converted document...", "info");
+        const blob = await zip.generateAsync({ type: 'blob' });
+
+        const extDot = currentFile.name.lastIndexOf('.');
+        const outName = currentFile.name.slice(0, extDot) + "_unicode" + currentFile.name.slice(extDot);
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = outName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 1500);
+
+        showStatus(`Conversion completed! Font set to "${targetFont}". File downloaded.`, "success");
+    } catch (err) {
+        console.error(err);
+        showStatus("Error during conversion: " + err.message, "error");
+    } finally {
+        convertBtn.disabled = false;
+    }
+}
+</script>
+
+</body>
+</html>
